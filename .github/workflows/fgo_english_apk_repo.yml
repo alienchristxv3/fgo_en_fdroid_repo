@@ -18,10 +18,14 @@ jobs:
       #  run: |
       #    ls ${{ github.workspace }}
       - run: echo "🍏 This job's status is ${{ job.status }}."
+      #- run: sudo snap remove $(snap list | awk '!/^Name|^core/ {print $1}')
+      - run: sudo apt remove --purge --assume-yes snapd
+      # trying to fix https://github.com/orgs/community/discussions/47863 https://bugs.launchpad.net/ubuntu/+source/grub2-signed/+bug/1931335 https://bugs.launchpad.net/ubuntu/+source/grub2/+bug/1872077
+      - run: sudo apt-mark hold grub-efi-amd64-signed; sudo apt-get update -y --fix-missing
       - run: sudo apt update -y; sudo apt upgrade -y
       - run: sudo apt-get install -y fdroidserver
       - name: cd to repo and download apk
-        run: cd ${{ github.workspace }}/repo; curl -OJL $(curl -s https://fate-grand-order.ru.uptodown.com/android/download | sed -n 's/.*data-url="\([^"]*\).*/\1/p')
+        run: cd ${{ github.workspace }}/repo; curl -OJL $(curl -s https://fate-grand-order.ru.uptodown.com/android/download | grep "data-url" | sed -e "s/^data-url=\"//" -e "s/\"$//")
       - run: fdroid update --create-metadata
       - run: |
           git config user.name github-actions
